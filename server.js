@@ -1,35 +1,30 @@
-const dgram = require('dgram');
-const { PacketWriter } = require('sa-mp-packet');
+const { SampQuery } = require('samp-query');
 
 // SA-MP Server configuration
 const serverOptions = {
   host: '23.88.73.88',
-  port: 9815, // Change this to your SA-MP server's port
+  port: 9815, // Change this to your SA-MP server's query port (default: 7777)
 };
 
-// Function to send a packet to the SA-MP server
-function sendPacket(packetId, ...args) {
-  const client = dgram.createSocket('udp4');
-  const packet = new PacketWriter();
-  
-  packet.writeUInt8(packetId);
-  // Write packet arguments based on their data types
-  
-  const buffer = packet.buffer;
-  client.send(buffer, 0, buffer.length, serverOptions.port, serverOptions.host, (err) => {
-    if (err) {
-      console.error('Error sending packet:', err);
-    }
-    client.close();
-  });
-}
+// Function to add a fake player to the SA-MP server
+async function addFakePlayer(playerName) {
+  const sampQuery = new SampQuery(serverOptions);
 
-// Example: Spawn a fake player in the game
-function spawnFakePlayer(playerName, skinId, posX, posY, posZ, rotation) {
-  // Use the appropriate packet ID and write the player spawn data
-  const packetId = 0x0A; // Replace this with the actual packet ID for player spawning
-  sendPacket(packetId, playerName, skinId, posX, posY, posZ, rotation);
+  try {
+    await sampQuery.connect();
+
+    // Replace 'skinId', 'posX', 'posY', 'posZ', and 'rotation' with desired values
+    const response = await sampQuery.send('AddPlayer', [
+      playerName, 'skinId', 'posX', 'posY', 'posZ', 'rotation'
+    ]);
+
+    console.log('Fake player added successfully:', response);
+  } catch (err) {
+    console.error('Error adding fake player:', err);
+  } finally {
+    sampQuery.disconnect();
+  }
 }
 
 // Start using the fake player functions
-spawnFakePlayer('FakePlayer1', 0, 100, 200, 15, 0);
+addFakePlayer('FakePlayer1');
