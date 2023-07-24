@@ -1,37 +1,29 @@
-const sampQuery = require('samp-query');
-const express = require('express');
+const dgram = require('dgram');
 
-// SA-MP Server query configuration
+// SA-MP Server configuration
 const serverOptions = {
-  host: '23.88.73.88',
-  port: 9815, // Change this to your SA-MP server's query port (default: 7777)
+  host: 'your_samp_server_ip',
+  port: 7777, // Change this to your SA-MP server's port
 };
 
-// Create an Express app
-const app = express();
-const port = 3000; // Change this to your desired port number
+// Function to send a command to the SA-MP server
+function sendCommand(command) {
+  const client = dgram.createSocket('udp4');
+  const buffer = Buffer.from(command, 'utf8');
 
-// Endpoint to get a list of connected players
-app.get('/players', (req, res) => {
-  sampQuery({
-    host: serverOptions.host,
-    port: serverOptions.port,
-  }, (error, response) => {
-    if (error) {
-      res.status(500).json({ error: 'Failed to query SA-MP server.' });
-    } else {
-      const players = response.players.map(player => ({
-        id: player.id,
-        name: player.name,
-        score: player.score,
-        ping: player.ping,
-      }));
-      res.json(players);
+  client.send(buffer, 0, buffer.length, serverOptions.port, serverOptions.host, (err) => {
+    if (err) {
+      console.error('Error sending command:', err);
     }
+    client.close();
   });
-});
+}
 
-// Start the Express server
-app.listen(port, () => {
-  console.log(`Fake Bot API is running on port ${port}`);
-});
+// Example: Spawn a fake player in the game
+function spawnFakePlayer(playerName, skinId, posX, posY, posZ, rotation) {
+  const command = `spawnplayer ${playerName} ${skinId} ${posX} ${posY} ${posZ} ${rotation}`;
+  sendCommand(command);
+}
+
+// Start using the fake player functions
+spawnFakePlayer('FakePlayer1', 0, 100, 200, 15, 0);
