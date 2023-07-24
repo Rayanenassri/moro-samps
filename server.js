@@ -2,8 +2,8 @@ const dgram = require('dgram');
 
 // SA-MP Server configuration
 const serverOptions = {
-  host: 'your_samp_server_ip',
-  port: 7777, // Change this to your SA-MP server's port
+  host: '23.88.73.88',
+  port: 9815, // Change this to your SA-MP server's port
 };
 
 // Function to send a command to the SA-MP server
