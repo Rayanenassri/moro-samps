@@ -1,40 +1,37 @@
-const { SampIPCClient } = require('sa-mp-ipc');
+const sampQuery = require('samp-query');
+const express = require('express');
 
-// SA-MP Server IPC configuration
-const ipcOptions = {
-  ip: 'your_samp_server_ip',
-  port: 7777, // Change this to your SA-MP server's port
+// SA-MP Server query configuration
+const serverOptions = {
+  host: '23.88.73.88',
+  port: 9815, // Change this to your SA-MP server's query port (default: 7777)
 };
 
-// Create an IPC client and connect to SA-MP server
-const ipcClient = new SampIPCClient(ipcOptions);
-
-ipcClient.on('connected', () => {
-  console.log('Connected to SA-MP server via IPC.');
-});
-
-ipcClient.on('disconnected', () => {
-  console.log('Disconnected from SA-MP server via IPC.');
-});
-
-// Function to make the bot say something in the chat
-function botSay(botName, message) {
-  ipcClient.send('botSay', { botName, message });
-}
-
-// Express setup
-const express = require('express');
+// Create an Express app
 const app = express();
 const port = 3000; // Change this to your desired port number
 
-// Define your API endpoint to make the bot say something
-app.get('/bot/say/:botName/:message', (req, res) => {
-  const { botName, message } = req.params;
-  botSay(botName, message);
-  res.send(`Bot "${botName}" said: ${message}`);
+// Endpoint to get a list of connected players
+app.get('/players', (req, res) => {
+  sampQuery({
+    host: serverOptions.host,
+    port: serverOptions.port,
+  }, (error, response) => {
+    if (error) {
+      res.status(500).json({ error: 'Failed to query SA-MP server.' });
+    } else {
+      const players = response.players.map(player => ({
+        id: player.id,
+        name: player.name,
+        score: player.score,
+        ping: player.ping,
+      }));
+      res.json(players);
+    }
+  });
 });
 
 // Start the Express server
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Fake Bot API is running on port ${port}`);
 });
